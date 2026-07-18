@@ -1,0 +1,361 @@
+{
+  "name": "Create & Publish Blog Post on WordPress",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        -120
+      ],
+      "id": "c2746d79-6086-47f3-a798-53b753e56720",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsdata.io/api/1/news",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "pub_86158bd0e4729a7e828ef93dce3e3c9cb3c88"
+            },
+            {
+              "name": "category",
+              "value": "technology"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        -120
+      ],
+      "id": "96b1eba7-936c-46d8-b98b-0f6bf83309dc",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You excel at transforming news into interesting articles without plagiarism.",
+              "role": "system"
+            },
+            {
+              "content": "Write a completely original blog post about this news:\n\nTitle: {{ $json.results[0].title}}\nDescription:{{ $json.results[0].description}}\n\nRequirements:\n\n-Create a unique and engaging title\n-Write EXACTLY 5 separate paragraphs (each in its own <p> tag)\n-Include your own analysis and perspective\n-Do NOT copy phrases from the original source\n-End with a thoughtful conclusion\n\nFormat the response as clean JSON without backticks:\n{\n\"title\": \"Your creative blog title\",\n\"content\": \"The full blog post content with HTML formatting including separate <p> tags for each paragraph\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        100,
+        -120
+      ],
+      "id": "0926d86d-9159-46a4-937c-f0c5b6099f09",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "1VMKjiSJqADW5yc4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = items[0].json.message.content;\nconst parsed = JSON.parse(response);\nreturn [\n  {\n    json:{\n      title: parsed.title,\n      content: parsed.content\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -120
+      ],
+      "id": "8d7ae932-0964-45eb-b817-4c5ba02b9dfb",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "{{ \"create a professional illustration showing\" + $json.title +\"the image should reflect key themes from this content:\"\n+ $json.content.substring(0,200) }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        680,
+        -120
+      ],
+      "id": "c816e1d7-9ed4-47e5-923e-6dd1e1464033",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "1VMKjiSJqADW5yc4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 1340,
+        "height": 638,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -120
+      ],
+      "id": "a1618c8d-a816-4442-9dd2-aa89630e97fe",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        880,
+        80
+      ],
+      "id": "e77ccedd-7f7a-4b1a-a20b-b1559e71b453",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://premeshinnovations.com/wp-json/wp/v2/posts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{  $( 'Code' ).item.json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{  $( 'Code' ).item.json.content }}"
+            },
+            {
+              "name": "status",
+              "value": "publish"
+            },
+            {
+              "name": "featured_media",
+              "value": "={{  $( 'HTTP Request2' ).item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        80
+      ],
+      "id": "f598dcac-f525-430d-83ff-b42394c64f69",
+      "name": "HTTP Request3",
+      "credentials": {
+        "wordpressApi": {
+          "id": "1xr6OcV7kUYNrzHH",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://premeshinnovations.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "attachment; filename=image.png"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -120
+      ],
+      "id": "53ecad3f-96de-4c9d-a6d9-679131353c4c",
+      "name": "HTTP Request2",
+      "credentials": {
+        "wordpressApi": {
+          "id": "1xr6OcV7kUYNrzHH",
+          "name": "Wordpress account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7daa53b1-23b3-419f-bd73-83cd14b8e3e0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f21aaf8491157c44331f10f943768229b6695aa90fd86fc40ddb60f0a283c31"
+  },
+  "id": "Bz89gA0ILA78iuwC",
+  "tags": [
+    {
+      "createdAt": "2025-06-05T06:58:59.412Z",
+      "updatedAt": "2025-06-05T06:58:59.412Z",
+      "id": "Ba1Vyb7BJb8L5WK7",
+      "name": "ET"
+    },
+    {
+      "createdAt": "2025-06-05T12:41:47.292Z",
+      "updatedAt": "2025-06-05T12:41:47.292Z",
+      "id": "dnXIxtu9AbfmIZag",
+      "name": "AIB"
+    },
+    {
+      "createdAt": "2025-10-27T08:56:35.862Z",
+      "updatedAt": "2025-10-27T08:56:35.862Z",
+      "id": "4VGoJKQCTJHU7PTY",
+      "name": "viraj-n8n"
+    }
+  ]
+}
