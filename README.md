@@ -10,7 +10,7 @@ This automation eliminates manual content creation and publishing efforts while 
 
 ---
 
-## Workflow Screenshot
+## Workflow Layout
 
 ![Workflow Architecture](images/blog-post-wordpress.png)
 
