@@ -1,5 +1,13 @@
 # Create & Publish Blog Post on WordPress using n8n
 
+![n8n](https://img.shields.io/badge/n8n-Automation-FF6D5A?style=for-the-badge)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=for-the-badge)
+![WordPress](https://img.shields.io/badge/WordPress-API-21759B?style=for-the-badge)
+![SEO](https://img.shields.io/badge/SEO-Optimized-0F9D58?style=for-the-badge)
+![AI](https://img.shields.io/badge/AI-Blog%20Generation-success?style=for-the-badge)
+![Publishing](https://img.shields.io/badge/Publishing-Automated-blue?style=for-the-badge)
+![Google Sheets](https://img.shields.io/badge/Google-Sheets-34A853?style=for-the-badge)
+
 ## Overview
 
 This n8n workflow automatically generates and publishes blog posts on a WordPress website using AI.
@@ -51,28 +59,6 @@ Manage multiple client blogs with minimal manual effort.
 ### Personal Blogs
 
 Maintain a consistently active blog.
-
----
-
-## Workflow Architecture
-
-Schedule Trigger
-↓
-Fetch Technology News
-↓
-Generate Blog Content
-↓
-Parse AI Response
-↓
-Generate AI Image
-↓
-Resize Image
-↓
-Upload Image to WordPress
-↓
-Merge Content + Media ID
-↓
-Publish Blog Post
 
 ---
 
